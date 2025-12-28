@@ -7,11 +7,15 @@ from datetime import datetime
 app = Flask(__name__)
 
 # --- Configuration ---
+# Use /tmp for writable files on Vercel (serverless environment)
+IS_VERCEL = os.environ.get('VERCEL', False)
+BASE_PATH = '/tmp' if IS_VERCEL else '.'
+
 FILES = {
-    'attendance': 'attendance_log.csv',
-    'production': 'production_log.csv',
-    'material': 'material_log.csv',
-    'standard_times': 'wp_data.csv'
+    'attendance': os.path.join(BASE_PATH, 'attendance_log.csv'),
+    'production': os.path.join(BASE_PATH, 'production_log.csv'),
+    'material': os.path.join(BASE_PATH, 'material_log.csv'),
+    'standard_times': 'wp_data.csv'  # This is read-only, keep in root
 }
 
 # --- Helper: Init CSVs ---
@@ -235,6 +239,9 @@ def get_dashboard_data():
         response_data[area] = avg_eff
 
     return jsonify(response_data)
+
+# Required for Vercel deployment
+application = app
 
 if __name__ == "__main__":
     app.run(debug=True)
